@@ -27,6 +27,8 @@ class StoreSiteRequest extends BaseFormRequest
                 Rule::unique('sites')->whereNull('deleted_at'),
             ],
             'iconFile' => ['nullable', 'file', 'mimes:png', 'max:65535'],
+            'description' => ['nullable', 'string'],
+            'icon_id' => ['nullable', 'integer'],
         ];
     }
 }

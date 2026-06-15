@@ -30,23 +30,33 @@ abstract class BaseFormRequest extends FormRequest
 
     protected function prepareForValidation(): void
     {
+        $sanitized = $this->sanitizeArray($this->all(), $this->htmlFields);
+
+        $this->merge($sanitized);
+    }
+
+    protected function sanitizeArray(array $data, array $htmlFields): array
+    {
         $sanitized = [];
 
-        foreach ($this->all() as $key => $value) {
-            if (!is_string($value)) {
-                $sanitized[$key] = $value;
-                continue;
-            }
-
-            if (in_array($key, $this->htmlFields)) {
-                // Champ HTML riche : sanitiser en conservant les balises sûres
-                $sanitized[$key] = clean($value); // helper de mews/purifier
+        foreach ($data as $key => $value) {
+            if (is_array($value)) {
+                // Dans le cas d'un tableau d'items (ex: items.*.champ), la clé pertinente
+                // pour savoir si c'est un champ HTML n'est pas l'index numérique
+                $sanitized[$key] = $this->sanitizeArray($value, $htmlFields);
+            } elseif (is_string($value)) {
+                if (in_array($key, $htmlFields, true)) {
+                    // Champ HTML riche : sanitiser en conservant les balises sûres
+                    $sanitized[$key] = clean($value); // helper de mews/purifier
+                } else {
+                    // Champ texte : supprimer toutes les balises
+                    $sanitized[$key] = strip_tags($value);
+                }
             } else {
-                // Champ texte : supprimer toutes les balises
-                $sanitized[$key] = strip_tags($value);
+                $sanitized[$key] = $value;
             }
         }
 
-        $this->merge($sanitized);
+        return $sanitized;
     }
 }

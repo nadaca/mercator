@@ -3,12 +3,13 @@
 namespace App\Http\Requests;
 
 use Gate;
-use Illuminate\Foundation\Http\FormRequest;
 use Symfony\Component\HttpFoundation\Response;
 use App\Models\Site;
 
-class MassUpdateSiteRequest extends FormRequest
+class MassUpdateSiteRequest extends BaseFormRequest
 {
+    protected array $htmlFields = ['description'];
+
     public function authorize()
     {
         abort_if(Gate::denies('site_edit'), Response::HTTP_FORBIDDEN, '403 Forbidden');
